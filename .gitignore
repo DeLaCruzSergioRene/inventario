@@ -1,0 +1,4 @@
+venv
+datos.db
+__pycache__/
+*.pyc
