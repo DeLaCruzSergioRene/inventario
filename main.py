@@ -1,4 +1,5 @@
 import flet as ft
+from vistas.pedidos import vista_pedidos
 from vistas.ui_prod import vista_prod
 from vistas.ui_prov import vista_prov
 
@@ -16,10 +17,15 @@ def main(page: ft.Page):
         panel.content = vista_prov()
         page.update()
 
+    def ir_pedidos(e):
+        panel.content = vista_pedidos()
+        page.update()
+
     nav = ft.Container(
         content=ft.Row([
             ft.TextButton("PRODUCTOS", on_click=ir_prod, icon="inventory"),
             ft.TextButton("PROVEEDORES", on_click=ir_prov, icon="people"),
+            ft.TextButton("PEDIDOS", on_click=ir_pedidos, icon="list_alt"),
         ], alignment=ft.MainAxisAlignment.CENTER),
         bgcolor=ft.Colors.WHITE, border_radius=15, margin=10
     )

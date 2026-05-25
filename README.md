@@ -1,0 +1,1 @@
+# Proyecto de un gestor de inventarios usando bases de datos y el frmawork Flet.

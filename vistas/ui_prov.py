@@ -11,7 +11,7 @@ def vista_prov():
         for p in listar("prov"):
             items.append(
                 ft.Container(
-                    bgcolor="white", padding=15, border_radius=10, width=400,
+                    bgcolor=ft.Colors.BLUE_GREY_50, padding=15, border_radius=12, width=420,
                     content=ft.Row([
                         ft.Text(f"✅ {p[1]}", weight="bold", size=16, color="black", expand=True),
                         ft.Text(f"Tel: {p[2]}", color="black"),
@@ -36,8 +36,9 @@ def vista_prov():
     col.on_mount = refresh
     return ft.Column([
         ft.Text("PROVEEDORES", size=28, weight="bold", color="blue"),
+        ft.Text("Agrega proveedores y mantén los datos de contacto", color="black54"),
         n, t,
-        ft.ElevatedButton("REGISTRAR", on_click=add),
+        ft.ElevatedButton("REGISTRAR", on_click=add, bgcolor=ft.Colors.BLUE),
         ft.Divider(height=20, color="transparent"),
         col
     ], horizontal_alignment="center", scroll="auto")
