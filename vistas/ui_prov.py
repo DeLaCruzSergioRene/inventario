@@ -36,7 +36,7 @@ def vista_prov():
     col.on_mount = refresh
     return ft.Column([
         ft.Text("PROVEEDORES", size=28, weight="bold", color="blue"),
-        ft.Text("Agrega proveedores y mantén los datos de contacto", color="black54"),
+        ft.Text("Agrega proveedores y mantén los datos de contacto.", color="black54"),
         n, t,
         ft.ElevatedButton("REGISTRAR", on_click=add, bgcolor=ft.Colors.BLUE),
         ft.Divider(height=20, color="transparent"),
