@@ -3,7 +3,7 @@ from datos.logica import guardar, listar, borrar
 
 def vista_prod():
     n = ft.TextField(label="Producto", width=300, border_radius=10)
-    c = ft.TextField(label="Cantidad", width=300, border_radius=10)
+    c = ft.TextField(label="Cantidad", width=300, border_radius=10, keyboard_type=ft.KeyboardType.NUMBER)
     col = ft.Column(horizontal_alignment="center", spacing=10)
 
     def refresh(e=None):
@@ -27,14 +27,14 @@ def vista_prod():
         refresh()
 
     def add(e):
-        if n.value and c.value:
+        if n.value and c.value and c.value.isdigit():
             guardar("prod", (n.value, c.value))
             n.value, c.value = "", ""; refresh()
 
     col.on_mount = refresh
     return ft.Column([
         ft.Text("INVENTARIO", size=25, weight="bold", color="blue"),
-        ft.Text("Registra aquí los productos y su stock", color="black54"),
+        ft.Text("Registra aquí los productos y su stock.", color="black54"),
         n, c,
         ft.ElevatedButton("GUARDAR", on_click=add, bgcolor=ft.Colors.BLUE),
         ft.Divider(height=20, color="transparent"),
