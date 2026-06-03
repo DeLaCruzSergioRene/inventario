@@ -21,9 +21,12 @@ def vista_pedidos():
     def cargar_proveedores():
         provs = listar("prov")
         # Crea opciones en el dropdown con el nombre de cada proveedor
-        proveedores_dropdown.options = [ft.dropdown.Option(p[1], key=str(p[0])) for p in provs]
-        if proveedores_dropdown.page:
-            proveedores_dropdown.update()
+        proveedores_dropdown.options = [ft.dropdown.Option(p[1]) for p in provs]
+        try:
+            if proveedores_dropdown.page:
+                proveedores_dropdown.update()
+        except RuntimeError:
+            pass
 
     # Actualiza la lista de productos cada vez que hay un cambio
     def refresh(e=None):
@@ -32,7 +35,7 @@ def vista_pedidos():
         for p in listar("prod"):
             cantidad = ft.TextField(
                 value="1",
-                width=80,
+                width=110,
                 text_align=ft.TextAlign.CENTER,
                 keyboard_type=ft.KeyboardType.NUMBER,
                 label="Cantidad",
@@ -42,12 +45,12 @@ def vista_pedidos():
             
             campo_agregar = ft.TextField(
                 value="1",
-                width=70,
+                width=90,
                 text_align=ft.TextAlign.CENTER,
                 keyboard_type=ft.KeyboardType.NUMBER,
+                label="Añadir",
                 dense=True,
-                border_radius=8,
-                hint_text="Cant"
+                border_radius=8
             )
 
             def order_producto(e, id_prod=p[0], nombre=p[1], field=cantidad):
@@ -83,30 +86,29 @@ def vista_pedidos():
                     pass
 
             items.append(
-                card(
-                    ft.Column([
-                        ft.Row([
-                            ft.Text(p[1], size=16, weight="bold", color="#2196F3", expand=True),
-                            ft.Container(
-                                bgcolor=ACCENT,
-                                padding=ft.padding.symmetric(8, 4),
-                                border_radius=8,
-                                content=ft.Text(f"Stock: {p[2]}", color="white", size=13, weight="bold")
-                            )
-                        ], alignment="spaceBetween"),
-                        ft.Row([
-                            cantidad,
-                            btn_success("PEDIR", on_click=order_producto),
-                            ft.Tooltip(
-                                content=ft.Container(padding=5, content=ft.Text("Aumentar stock", size=11)),
-                                message="+"
-                            ),
-                            ft.IconButton(ft.icons.ADD_CIRCLE, icon_color="#4CAF50", 
-                                on_click=agregar_stock, tooltip="Aumentar stock")
-                        ], spacing=5, wrap=False),
-                        ft.Row([campo_agregar], spacing=5)
-                    ], spacing=8)
-                ), width=520
+                ft.Container(
+                    content=card(
+                        ft.Column([
+                            ft.Row([
+                                ft.Text(p[1], size=16, weight="bold", color="#2196F3", expand=True),
+                                ft.Container(
+                                    bgcolor=ACCENT,
+                                    padding=ft.padding.symmetric(8, 4),
+                                    border_radius=8,
+                                    content=ft.Text(f"Stock: {p[2]}", color="white", size=13, weight="bold")
+                                )
+                            ], alignment="spaceBetween"),
+                            ft.Row([
+                                cantidad,
+                                btn_success("PEDIR", on_click=order_producto),
+                                ft.IconButton(ft.icons.Icons.ADD, icon_color="#4CAF50", 
+                                    on_click=agregar_stock, tooltip="Aumentar stock")
+                            ], spacing=5, wrap=False),
+                            ft.Row([campo_agregar], spacing=5)
+                        ], spacing=8)
+                    ),
+                    width=520
+                )
             )
 
         if not items:
