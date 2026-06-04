@@ -1,53 +1,109 @@
 import flet as ft
-from datos.logica import guardar, listar, borrar
-from estilos import btn_primary, btn_danger, card, PRIMARY, ACCENT
+from datos.logica import guardar_producto, listar_productos, borrar_producto, actualizar_producto, obtener_producto
+from estilos import btn_primary, btn_danger, btn_success, card, PRIMARY, ACCENT, SUCCESS, DANGER
 
 # Vista para gestionar el inventario de productos
-def vista_prod():
-    # Campo de texto para ingresar el nombre del producto
-    n = ft.TextField(label="Producto", width=300, border_radius=10)
-    # Campo de texto para ingresar la cantidad inicial del producto
-    c = ft.TextField(label="Cantidad", width=300, border_radius=10, keyboard_type=ft.KeyboardType.NUMBER)
-    # Columna que muestra la lista de productos registrados
+def vista_prod(page):
+    nombre = ft.TextField(label="Producto", width=300, border_radius=10)
+    cantidad = ft.TextField(label="Cantidad", width=300, border_radius=10, keyboard_type=ft.KeyboardType.NUMBER)
     col = ft.Column(horizontal_alignment="center", spacing=10)
+    estado_edicion = {"id": None}
 
-    # Actualiza la lista visual de productos en la pantalla
+    def mostrar_mensaje(texto, exito=True):
+        page.snack_bar = ft.SnackBar(ft.Text(texto), bgcolor=SUCCESS if exito else DANGER)
+        page.snack_bar.open = True
+        page.update()
+
+    def cancelar_edicion(e=None):
+        estado_edicion["id"] = None
+        nombre.value = ""
+        cantidad.value = ""
+        btn_guardar.text = "REGISTRAR PRODUCTO"
+        btn_cancelar.visible = False
+        page.update()
+
+    def cargar_edicion(id_reg):
+        producto = obtener_producto(id_reg)
+        if producto:
+            estado_edicion["id"] = id_reg
+            nombre.value = producto[1]
+            cantidad.value = str(producto[2])
+            btn_guardar.text = "ACTUALIZAR PRODUCTO"
+            btn_cancelar.visible = True
+            page.update()
+
+    def guardar_o_actualizar(e=None):
+        nom = nombre.value.strip()
+        cant = cantidad.value.strip()
+        if not nom or not cant or not cant.isdigit() or int(cant) <= 0:
+            mostrar_mensaje("Ingrese nombre y cantidad válidos.", False)
+            return
+        if estado_edicion["id"] is None:
+            guardar_producto(nom, cant)
+            mostrar_mensaje("Producto registrado.")
+        else:
+            actualizar_producto(estado_edicion["id"], nom, cant)
+            mostrar_mensaje("Producto actualizado.")
+        cancelar_edicion()
+        refresh()
+
+    btn_cancelar = ft.TextButton("CANCELAR", visible=False, on_click=cancelar_edicion)
+    btn_guardar = btn_primary("REGISTRAR PRODUCTO", on_click=guardar_o_actualizar)
+
+    def confirmar_borrar(id_reg):
+        def cerrar(e=None):
+            page.dialog = None            
+            refresh()            
+            page.update()
+
+        def confirmar(e=None):
+            borrar_producto(id_reg)
+            refresh()
+            mostrar_mensaje("Producto eliminado.")
+            cerrar()
+
+        dialog = ft.AlertDialog(
+            title=ft.Text("Confirmar eliminación"),
+            content=ft.Text("¿Eliminar este producto?"),
+            actions=[
+                ft.TextButton("Cancelar", on_click=cerrar),
+                btn_danger("Eliminar", on_click=confirmar)
+            ],
+            actions_alignment=ft.MainAxisAlignment.END
+        )
+        page.dialog = dialog
+        dialog.open = True
+        page.update()
+
     def refresh(e=None):
         items = []
-        # Itera sobre todos los productos registrados en la BD
-        for p in listar("prod"):
-            def remove(id_reg):
-                borrar("prod", id_reg)
-                refresh()
-
+        for p in listar_productos():
             items.append(
                 card(
-                    ft.Row([
-                        ft.Container(
-                            bgcolor=ACCENT,
-                            padding=ft.padding.symmetric(8, 6),
-                            border_radius=50,
-                            content=ft.Text(p[1][0].upper(), color="white", weight="bold")
-                        ),
-                        ft.Column([
-                            ft.Text(p[1], weight="bold", size=14, color=PRIMARY),
-                            ft.Text(f"📦 {p[2]} unidades", size=11, color="black54")
-                        ], spacing=1, expand=True),
-                        btn_danger("✕", on_click=lambda e, id=p[0]: remove(id))
-                    ], alignment="spaceBetween", vertical_alignment="center"),
+                    ft.Column([
+                        ft.Row([
+                            ft.Container(
+                                bgcolor=ACCENT,
+                                padding=ft.padding.symmetric(8, 6),
+                                border_radius=50,
+                                content=ft.Text(p[1][0].upper(), color="white", weight="bold")
+                            ),
+                            ft.Column([
+                                ft.Text(p[1], weight="bold", size=14, color=PRIMARY),
+                                ft.Text(f"📦 {p[2]} unidades", size=11, color="black54")
+                            ], spacing=1, expand=True),
+                            ft.Row([
+                                btn_success("EDITAR", on_click=lambda e, id=p[0]: cargar_edicion(id)),
+                                btn_danger("✕", on_click=lambda e, id=p[0]: confirmar_borrar(id))
+                            ], spacing=5)
+                        ], alignment="spaceBetween", vertical_alignment="center")
+                    ]),
                     width=450
                 )
             )
         col.controls = items
-        if col.page: col.update()
-
-    # Agrega un nuevo producto a la base de datos
-    def add(e):
-        # Valida que los campos no estén vacíos y que la cantidad sea un número
-        if n.value and c.value and c.value.isdigit():
-            guardar("prod", (n.value, c.value))
-            n.value, c.value = "", ""
-            refresh()
+        if col.page:
+            col.update()
 
     col.on_mount = refresh
     return ft.Column([
@@ -55,7 +111,7 @@ def vista_prod():
         ft.Text("Registra productos y gestiona el stock.", color="black54", size=14),
         ft.Divider(height=15, color="transparent"),
         card(
-            ft.Column([n, c, btn_primary("GUARDAR PRODUCTO", on_click=add)], spacing=10),
+            ft.Column([nombre, cantidad, ft.Row([btn_guardar, btn_cancelar], spacing=10)], spacing=10),
             width=350
         ),
         ft.Divider(height=20, color="transparent"),

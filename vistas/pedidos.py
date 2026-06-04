@@ -1,26 +1,24 @@
 import flet as ft
 from datos.logica import listar, pedir_producto, actualizar_stock
-from estilos import btn_success, btn_danger, card, ACCENT
+from estilos import btn_success, btn_danger, card, ACCENT, SUCCESS, DANGER
 
 # Vista principal para realizar pedidos y gestionar stock
-def vista_pedidos():
-    # Etiqueta para mostrar mensajes de éxito o error
-    mensaje = ft.Text("", color="red")
-    # Columna que contiene la lista de productos disponibles
+def vista_pedidos(page):
     productos = ft.Column(horizontal_alignment="center", spacing=10)
-    
-    # Dropdown para seleccionar de qué proveedor hacer el pedido
     proveedores_dropdown = ft.Dropdown(
         label="Seleccionar Proveedor",
         width=300,
         border_radius=10,
         options=[]
     )
-    
-    # Obtiene todos los proveedores registrados y los carga en el dropdown
+
+    def mostrar_mensaje(texto, exito=True):
+        page.snack_bar = ft.SnackBar(ft.Text(texto), bgcolor=SUCCESS if exito else DANGER)
+        page.snack_bar.open = True
+        page.update()
+
     def cargar_proveedores():
         provs = listar("prov")
-        # Crea opciones en el dropdown con el nombre de cada proveedor
         proveedores_dropdown.options = [ft.dropdown.Option(p[1]) for p in provs]
         try:
             if proveedores_dropdown.page:
@@ -28,9 +26,8 @@ def vista_pedidos():
         except RuntimeError:
             pass
 
-    # Actualiza la lista de productos cada vez que hay un cambio
     def refresh(e=None):
-        cargar_proveedores()  # Recarga los proveedores en el dropdown
+        cargar_proveedores()
         items = []
         for p in listar("prod"):
             cantidad = ft.TextField(
@@ -42,7 +39,6 @@ def vista_pedidos():
                 dense=True,
                 border_radius=10
             )
-            
             campo_agregar = ft.TextField(
                 value="1",
                 width=90,
@@ -54,36 +50,26 @@ def vista_pedidos():
             )
 
             def order_producto(e, id_prod=p[0], nombre=p[1], field=cantidad):
-                if not field.value or not field.value.isdigit():
-                    mensaje.value = "Ingrese una cantidad válida."
+                if not field.value or not field.value.isdigit() or int(field.value) <= 0:
+                    mostrar_mensaje("Ingrese una cantidad válida.", False)
                 else:
                     qty = int(field.value)
                     if pedir_producto(id_prod, qty):
-                        mensaje.value = f"✓ Pedido: {qty} x {nombre}"
+                        mostrar_mensaje(f"✓ Pedido: {qty} x {nombre}")
                     else:
-                        mensaje.value = "Stock insuficiente."
+                        mostrar_mensaje("Stock insuficiente.", False)
                 refresh()
-                try:
-                    productos.update()
-                except RuntimeError:
-                    pass
 
-            # Función para añadir más unidades al stock de un producto
             def agregar_stock(e, id_prod=p[0], nombre=p[1], field=campo_agregar):
-                # Valida que la entrada sea un número válido
-                if not field.value or not field.value.isdigit():
-                    mensaje.value = "Cantidad inválida."
+                if not field.value or not field.value.isdigit() or int(field.value) <= 0:
+                    mostrar_mensaje("Cantidad inválida.", False)
                 else:
                     qty = int(field.value)
                     if actualizar_stock(id_prod, qty):
-                        mensaje.value = f"✓ +{qty} stock a {nombre}"
+                        mostrar_mensaje(f"✓ +{qty} stock a {nombre}")
                     else:
-                        mensaje.value = "Error al actualizar."
+                        mostrar_mensaje("Error al actualizar.", False)
                 refresh()
-                try:
-                    productos.update()
-                except RuntimeError:
-                    pass
 
             items.append(
                 ft.Container(
@@ -101,7 +87,7 @@ def vista_pedidos():
                             ft.Row([
                                 cantidad,
                                 btn_success("PEDIR", on_click=order_producto),
-                                ft.IconButton(ft.icons.Icons.ADD, icon_color="#4CAF50", 
+                                ft.IconButton(ft.icons.Icons.ADD, icon_color="#4CAF50",
                                     on_click=agregar_stock, tooltip="Aumentar stock")
                             ], spacing=5, wrap=False),
                             ft.Row([campo_agregar], spacing=5)
@@ -131,7 +117,6 @@ def vista_pedidos():
                 border_radius=10,
                 content=proveedores_dropdown
             ),
-            mensaje,
             ft.Divider(height=15, color="transparent"),
             productos
         ],

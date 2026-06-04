@@ -10,19 +10,19 @@ def main(page: ft.Page):
     page.bgcolor = "#FAFAFA" 
     
     # Contenedor principal que muestra la vista actualmente seleccionada
-    panel = ft.Container(content=vista_prod(), padding=20, expand=True)
+    panel = ft.Container(content=vista_prod(page), padding=20, expand=True)
 
     # Funciones para cambiar entre vistas al hacer clic en los botones de navegación
     def ir_prod(e):
-        panel.content = vista_prod()  # Muestra la vista de inventario
+        panel.content = vista_prod(page)
         page.update()
 
     def ir_prov(e):
-        panel.content = vista_prov()  # Muestra la vista de proveedores
+        panel.content = vista_prov(page)
         page.update()
 
     def ir_pedidos(e):
-        panel.content = vista_pedidos()  # Muestra la vista de pedidos
+        panel.content = vista_pedidos(page)
         page.update()
 
     # Barra de navegación superior con botones para cambiar de vista
