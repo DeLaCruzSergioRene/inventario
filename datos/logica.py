@@ -16,8 +16,15 @@ def listar(tab):
 
 # Elimina un registro por su ID de la tabla especificada
 def borrar(tab, id_reg):
-    db.execute(f"DELETE FROM {tab} WHERE id = ?", (id_reg,))
+    print(f"logica.borrar llamado tab={tab} id={id_reg}")
+    cur = db.cursor()
+    before = db.total_changes
+    cur.execute(f"DELETE FROM {tab} WHERE id = ?", (id_reg,))
     db.commit()
+    after = db.total_changes
+    affected = after - before
+    print(f"logica.borrar: filas afectadas={affected} para id={id_reg} en {tab}")
+    return affected > 0
 
 # Actualiza un registro existente en la tabla especificada
 def actualizar(tab, id_reg, valores):

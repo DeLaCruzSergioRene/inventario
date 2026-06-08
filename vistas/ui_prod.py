@@ -51,28 +51,43 @@ def vista_prod(page):
     btn_guardar = btn_primary("REGISTRAR PRODUCTO", on_click=guardar_o_actualizar)
 
     def confirmar_borrar(id_reg):
+        print(f"confirmar_borrar llamado con id={id_reg}")
+        page.snack_bar = ft.SnackBar(ft.Text(f"Debug: abrir dialogo borrar {id_reg}"), bgcolor=SUCCESS)
+        page.snack_bar.open = True
+        page.update()
         def cerrar(e=None):
             page.dialog = None            
             refresh()            
             page.update()
 
         def confirmar(e=None):
-            borrar_producto(id_reg)
-            refresh()
-            mostrar_mensaje("Producto eliminado.")
+            print(f"confirmar ejecutar borrar id={id_reg}")
+            page.snack_bar = ft.SnackBar(ft.Text(f"Debug: confirmando borrar {id_reg}"), bgcolor=SUCCESS)
+            page.snack_bar.open = True
+            page.update()
+            res = borrar_producto(id_reg)
+            print(f"borrar_producto devolvió: {res}")
+            if res:
+                refresh()
+                mostrar_mensaje("Producto eliminado.")
+            else:
+                mostrar_mensaje("No se pudo eliminar el producto.", False)
             cerrar()
 
-        dialog = ft.AlertDialog(
-            title=ft.Text("Confirmar eliminación"),
-            content=ft.Text("¿Eliminar este producto?"),
-            actions=[
-                ft.TextButton("Cancelar", on_click=cerrar),
-                btn_danger("Eliminar", on_click=confirmar)
-            ],
-            actions_alignment=ft.MainAxisAlignment.END
-        )
-        page.dialog = dialog
-        dialog.open = True
+        # Mantener la función para compatibilidad con otros usos pero
+        # no mostrar diálogo cuando se usa la X.
+        # Para borrar directamente usa la función interna `borrar_directo`.
+        pass
+
+    def borrar_directo(id_reg, e=None):
+        print(f"borrar_directo llamado con id={id_reg}")
+        res = borrar_producto(id_reg)
+        print(f"borrar_producto devolvió: {res}")
+        if res:
+            mostrar_mensaje("Producto eliminado.")
+        else:
+            mostrar_mensaje("No se pudo eliminar el producto.", False)
+        refresh()
         page.update()
 
     def refresh(e=None):
@@ -94,7 +109,7 @@ def vista_prod(page):
                             ], spacing=1, expand=True),
                             ft.Row([
                                 btn_success("EDITAR", on_click=lambda e, id=p[0]: cargar_edicion(id)),
-                                btn_danger("✕", on_click=lambda e, id=p[0]: confirmar_borrar(id))
+                                btn_danger("✕", on_click=lambda e, id=p[0]: borrar_directo(id))
                             ], spacing=5)
                         ], alignment="spaceBetween", vertical_alignment="center")
                     ]),

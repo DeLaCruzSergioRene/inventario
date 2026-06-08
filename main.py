@@ -38,4 +38,4 @@ def main(page: ft.Page):
 
     page.add(nav, panel)
 
-ft.app(target=main)
+ft.run(main)

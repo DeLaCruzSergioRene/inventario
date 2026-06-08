@@ -51,28 +51,42 @@ def vista_prov(page):
     btn_guardar = btn_primary("REGISTRAR PROVEEDOR", on_click=guardar_o_actualizar)
 
     def confirmar_borrar(id_reg):
+        print(f"confirmar_borrar prov llamado con id={id_reg}")
+        page.snack_bar = ft.SnackBar(ft.Text(f"Debug: abrir dialogo borrar prov {id_reg}"), bgcolor=SUCCESS)
+        page.snack_bar.open = True
+        page.update()
         def cerrar(e=None):
             page.dialog = None
             refresh()
             page.update()
 
         def confirmar(e=None):
-            borrar_proveedor(id_reg)
-            refresh()
-            mostrar_mensaje("Proveedor eliminado.")
+            print(f"confirmar prov ejecutar borrar id={id_reg}")
+            page.snack_bar = ft.SnackBar(ft.Text(f"Debug: confirmando borrar prov {id_reg}"), bgcolor=SUCCESS)
+            page.snack_bar.open = True
+            page.update()
+            res = borrar_proveedor(id_reg)
+            print(f"borrar_proveedor devolvió: {res}")
+            if res:
+                refresh()
+                mostrar_mensaje("Proveedor eliminado.")
+            else:
+                mostrar_mensaje("No se pudo eliminar el proveedor.", False)
             cerrar()
 
-        dialog = ft.AlertDialog(
-            title=ft.Text("Confirmar eliminación"),
-            content=ft.Text("¿Eliminar este proveedor?"),
-            actions=[
-                ft.TextButton("Cancelar", on_click=cerrar),
-                btn_danger("Eliminar", on_click=confirmar)
-            ],
-            actions_alignment=ft.MainAxisAlignment.END
-        )
-        page.dialog = dialog
-        dialog.open = True
+        # Mantener la función para compatibilidad con otros usos pero
+        # no mostrar diálogo cuando se usa la X.
+        pass
+
+    def borrar_directo(id_reg, e=None):
+        print(f"borrar_directo prov llamado con id={id_reg}")
+        res = borrar_proveedor(id_reg)
+        print(f"borrar_proveedor devolvió: {res}")
+        if res:
+            mostrar_mensaje("Proveedor eliminado.")
+        else:
+            mostrar_mensaje("No se pudo eliminar el proveedor.", False)
+        refresh()
         page.update()
 
     def refresh(e=None):
@@ -93,7 +107,7 @@ def vista_prov(page):
                         ], spacing=2, expand=True),
                         ft.Row([
                             btn_success("EDITAR", on_click=lambda e, id=p[0]: cargar_edicion(id)),
-                            btn_danger("✕", on_click=lambda e, id=p[0]: confirmar_borrar(id))
+                            btn_danger("✕", on_click=lambda e, id=p[0]: borrar_directo(id))
                         ], spacing=5)
                     ], alignment="spaceBetween", vertical_alignment="center"),
                     width=450
