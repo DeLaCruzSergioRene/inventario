@@ -6,6 +6,9 @@ from estilos import btn_primary, btn_danger, btn_success, card, PRIMARY, ACCENT,
 def vista_prod(page):
     nombre = ft.TextField(label="Producto", width=300, border_radius=10)
     cantidad = ft.TextField(label="Cantidad", width=300, border_radius=10, keyboard_type=ft.KeyboardType.NUMBER)
+    busqueda = ft.TextField(label="Buscar producto", width=300, border_radius=10, on_change=lambda e: refresh())
+    resumen = ft.Row(spacing=10, wrap=True)
+    alerta_stock = ft.Text("", size=12, color=SUCCESS)
     col = ft.Column(horizontal_alignment="center", spacing=10)
     estado_edicion = {"id": None}
 
@@ -46,6 +49,7 @@ def vista_prod(page):
             mostrar_mensaje("Producto actualizado.")
         cancelar_edicion()
         refresh()
+        page.update()
 
     btn_cancelar = ft.TextButton("CANCELAR", visible=False, on_click=cancelar_edicion)
     btn_guardar = btn_primary("REGISTRAR PRODUCTO", on_click=guardar_o_actualizar)
@@ -91,8 +95,29 @@ def vista_prod(page):
         page.update()
 
     def refresh(e=None):
+        productos = listar_productos()
+        texto = busqueda.value.strip().lower()
+        filtrados = [p for p in productos if texto in p[1].lower()]
+
+        total_productos = len(filtrados)
+        total_unidades = sum(p[2] for p in filtrados)
+        stock_bajo = sum(1 for p in filtrados if p[2] < 5)
+
+        resumen.controls = [
+            card(ft.Column([ft.Text("Productos", size=11, color="black54"), ft.Text(str(total_productos), size=24, weight="bold", color=PRIMARY)]), width=140),
+            card(ft.Column([ft.Text("Unidades", size=11, color="black54"), ft.Text(str(total_unidades), size=24, weight="bold", color=SUCCESS)]), width=140),
+            card(ft.Column([ft.Text("Stock bajo", size=11, color="black54"), ft.Text(str(stock_bajo), size=24, weight="bold", color=DANGER)]), width=140),
+        ]
+
+        if stock_bajo:
+            alerta_stock.value = f"⚠️ {stock_bajo} producto(s) con menos de 5 unidades."
+            alerta_stock.color = DANGER
+        else:
+            alerta_stock.value = "✅ Sin alertas de stock bajo."
+            alerta_stock.color = SUCCESS
+
         items = []
-        for p in listar_productos():
+        for p in filtrados:
             items.append(
                 card(
                     ft.Column([
@@ -116,9 +141,16 @@ def vista_prod(page):
                     width=450
                 )
             )
+        if not items:
+            items = [ft.Text("No hay productos que coincidan con la búsqueda.", color="grey", italic=True)]
         col.controls = items
-        if col.page:
+        try:
+            resumen.update()
+            alerta_stock.update()
             col.update()
+            page.update()
+        except RuntimeError:
+            pass
 
     col.on_mount = refresh
     return ft.Column([
@@ -129,6 +161,11 @@ def vista_prod(page):
             ft.Column([nombre, cantidad, ft.Row([btn_guardar, btn_cancelar], spacing=10)], spacing=10),
             width=350
         ),
-        ft.Divider(height=20, color="transparent"),
+        ft.Divider(height=10, color="transparent"),
+        ft.Text("Resumen rápido", size=16, weight="bold", color=PRIMARY),
+        busqueda,
+        resumen,
+        alerta_stock,
+        ft.Divider(height=10, color="transparent"),
         col
     ], horizontal_alignment="center", scroll="auto")

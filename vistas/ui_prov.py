@@ -6,6 +6,8 @@ from estilos import btn_primary, btn_danger, btn_success, card, PRIMARY, ACCENT,
 def vista_prov(page):
     nombre = ft.TextField(label="Nombre del Proveedor", width=300, border_radius=10)
     telefono = ft.TextField(label="Teléfono", width=300, border_radius=10)
+    busqueda = ft.TextField(label="Buscar proveedor", width=300, border_radius=10, on_change=lambda e: refresh())
+    resumen = ft.Text("", size=12, color=PRIMARY)
     col = ft.Column(horizontal_alignment="center", spacing=10)
     estado_edicion = {"id": None}
 
@@ -90,8 +92,14 @@ def vista_prov(page):
         page.update()
 
     def refresh(e=None):
+        proveedores = listar_proveedores()
+        texto = busqueda.value.strip().lower()
+        filtrados = [p for p in proveedores if texto in p[1].lower() or texto in p[2].lower()]
+
+        resumen.value = f"Mostrando {len(filtrados)} proveedor(es) de {len(proveedores)} registrados."
+
         items = []
-        for p in listar_proveedores():
+        for p in filtrados:
             items.append(
                 card(
                     ft.Row([
@@ -113,6 +121,8 @@ def vista_prov(page):
                     width=450
                 )
             )
+        if not items:
+            items = [ft.Text("No hay proveedores que coincidan con la búsqueda.", color="grey", italic=True)]
         col.controls = items
         if col.page:
             col.update()
@@ -126,6 +136,9 @@ def vista_prov(page):
             ft.Column([nombre, telefono, ft.Row([btn_guardar, btn_cancelar], spacing=10)], spacing=10),
             width=350
         ),
-        ft.Divider(height=20, color="transparent"),
+        ft.Divider(height=10, color="transparent"),
+        busqueda,
+        resumen,
+        ft.Divider(height=10, color="transparent"),
         col
     ], horizontal_alignment="center", scroll="auto")

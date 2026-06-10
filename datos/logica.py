@@ -70,6 +70,16 @@ def actualizar_producto(id_reg, nombre, cantidad):
 def obtener_producto(id_reg):
     return obtener("prod", id_reg)
 
+def registrar_pedido(prod_id, prod_nom, prov_id, prov_nom, cantidad, tipo):
+    if cantidad <= 0:
+        return False
+    db.execute(
+        "INSERT INTO pedidos (prod_id, prod_nom, prov_id, prov_nom, cant, tipo) VALUES (?, ?, ?, ?, ?, ?)",
+        (prod_id, prod_nom.strip(), prov_id, prov_nom.strip(), cantidad, tipo)
+    )
+    db.commit()
+    return True
+
 # Valida stock disponible y resta cantidad al producto si hay suficiente
 def pedir_producto(id_prod, cantidad):
     if cantidad <= 0:
