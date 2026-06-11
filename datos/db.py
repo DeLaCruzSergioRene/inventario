@@ -1,4 +1,5 @@
 import sqlite3
+
 def conectar():
     con = sqlite3.connect("datos.db", check_same_thread=False)
     cur = con.cursor()
@@ -13,6 +14,15 @@ def conectar():
             prov_nom TEXT,
             cant INTEGER,
             tipo TEXT,
+            fecha TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS usuarios (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre TEXT NOT NULL,
+            email TEXT NOT NULL UNIQUE,
+            clave TEXT NOT NULL,
             fecha TEXT DEFAULT CURRENT_TIMESTAMP
         )
     """)

@@ -154,8 +154,14 @@ def vista_prod(page):
 
     col.on_mount = refresh
     return ft.Column([
-        ft.Text("INVENTARIO", size=28, weight="bold", color=PRIMARY),
-        ft.Text("Registra productos y gestiona el stock.", color="black54", size=14),
+        ft.Row(
+            [
+                ft.Text("Productos", size=28, weight="bold", color=PRIMARY),
+                ft.Text("Registra productos y gestiona el stock.", size=13, color="black54"),
+            ],
+            alignment="spaceBetween",
+            wrap=True,
+        ),
         ft.Divider(height=15, color="transparent"),
         card(
             ft.Column([nombre, cantidad, ft.Row([btn_guardar, btn_cancelar], spacing=10)], spacing=10),

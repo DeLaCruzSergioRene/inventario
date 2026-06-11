@@ -160,8 +160,14 @@ def vista_pedidos(page, ir_resumen=None):
     refresh()
     return ft.Column(
         [
-            ft.Text("Pedidos", size=28, weight="bold", color="#2196F3"),
-            ft.Text("Busca productos, registra pedidos y revisa el stock actualizado.", size=14, color="black54"),
+            ft.Row(
+                [
+                    ft.Text("Pedidos", size=28, weight="bold", color="#2196F3"),
+                    ft.Text("Busca productos, registra pedidos y revisa el stock actualizado.", size=13, color="black54"),
+                ],
+                alignment="spaceBetween",
+                wrap=True,
+            ),
             ft.Divider(height=15, color="transparent"),
             ft.Container(
                 bgcolor="#F5F5F5",

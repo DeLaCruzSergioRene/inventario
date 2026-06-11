@@ -1,8 +1,6 @@
 import flet as ft
 from datos.logica import listar_productos, listar_proveedores
 from estilos import btn_primary, card, PRIMARY, SUCCESS, DANGER, ACCENT
-
-
 # Vista adicional para ver el total registrado con scroll y búsqueda rápida
 
 def vista_resumen(page, volver=None):

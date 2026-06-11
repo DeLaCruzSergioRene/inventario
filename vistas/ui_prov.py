@@ -129,8 +129,14 @@ def vista_prov(page):
 
     col.on_mount = refresh
     return ft.Column([
-        ft.Text("PROVEEDORES", size=28, weight="bold", color=PRIMARY),
-        ft.Text("Gestiona tus proveedores y contactos.", color="black54", size=14),
+        ft.Row(
+            [
+                ft.Text("Proveedores", size=28, weight="bold", color=PRIMARY),
+                ft.Text("Gestiona tus proveedores y contactos.", size=13, color="black54"),
+            ],
+            alignment="spaceBetween",
+            wrap=True,
+        ),
         ft.Divider(height=15, color="transparent"),
         card(
             ft.Column([nombre, telefono, ft.Row([btn_guardar, btn_cancelar], spacing=10)], spacing=10),

@@ -70,6 +70,24 @@ def actualizar_producto(id_reg, nombre, cantidad):
 def obtener_producto(id_reg):
     return obtener("prod", id_reg)
 
+def guardar_usuario(nombre, email, clave):
+    email = email.strip().lower()
+    nombre = nombre.strip()
+    if not nombre or not email or not clave:
+        return False
+    db.execute("INSERT INTO usuarios (nombre, email, clave) VALUES (?, ?, ?)", (nombre, email, clave))
+    db.commit()
+    return True
+
+def obtener_usuario_por_email(email):
+    email = email.strip().lower()
+    return db.execute("SELECT * FROM usuarios WHERE email = ?", (email,)).fetchone()
+
+def verificar_usuario(email, clave):
+    usuario = obtener_usuario_por_email(email)
+    return usuario is not None and usuario[3] == clave
+
+
 def registrar_pedido(prod_id, prod_nom, prov_id, prov_nom, cantidad, tipo):
     if cantidad <= 0:
         return False
