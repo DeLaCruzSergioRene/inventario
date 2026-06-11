@@ -1,10 +1,7 @@
 import re
-
 import flet as ft
-
 from datos.logica import verificar_usuario
 from estilos import DANGER, PRIMARY, SUCCESS, card
-
 
 def vista_sesion(page: ft.Page, on_success=None, on_back=None):
     email = ft.TextField(label="Correo electrónico", width=320, border_radius=10)
