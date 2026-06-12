@@ -5,7 +5,7 @@ from estilos import DANGER, PRIMARY, SUCCESS, card
 
 def vista_sesion(page: ft.Page, on_success=None, on_back=None):
     email = ft.TextField(label="Correo electrónico", width=320, border_radius=10)
-    clave = ft.TextField(label="Contraseña", password=True, width=320, border_radius=10)
+    clave = ft.TextField(label="Contraseña", password=True, can_reveal_password=True, width=320, border_radius=10)
     mensaje = ft.Text("", size=12, color=SUCCESS)
 
     def validar_email(valor: str) -> bool:
@@ -56,7 +56,7 @@ def vista_sesion(page: ft.Page, on_success=None, on_back=None):
         ),
         padding=24,
         border_radius=18,
-        bgcolor="white",
-        shadow=ft.BoxShadow(blur_radius=10, spread_radius=1, color="#00000015"),
+        bgcolor="rgba(255,255,255,0.88)",
+        shadow=ft.BoxShadow(blur_radius=12, spread_radius=1, color="#00000018"),
         width=420,
     )

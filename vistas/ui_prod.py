@@ -6,6 +6,7 @@ from estilos import btn_primary, btn_danger, btn_success, card, PRIMARY, ACCENT,
 def vista_prod(page):
     nombre = ft.TextField(label="Producto", width=300, border_radius=10)
     cantidad = ft.TextField(label="Cantidad", width=300, border_radius=10, keyboard_type=ft.KeyboardType.NUMBER)
+    precio = ft.TextField(label="Precio unitario", width=300, border_radius=10, keyboard_type=ft.KeyboardType.NUMBER, value="0")
     busqueda = ft.TextField(label="Buscar producto", width=300, border_radius=10, on_change=lambda e: refresh())
     resumen = ft.Row(spacing=10, wrap=True)
     alerta_stock = ft.Text("", size=12, color=SUCCESS)
@@ -21,6 +22,7 @@ def vista_prod(page):
         estado_edicion["id"] = None
         nombre.value = ""
         cantidad.value = ""
+        precio.value = "0"
         btn_guardar.text = "REGISTRAR PRODUCTO"
         btn_cancelar.visible = False
         page.update()
@@ -31,6 +33,7 @@ def vista_prod(page):
             estado_edicion["id"] = id_reg
             nombre.value = producto[1]
             cantidad.value = str(producto[2])
+            precio.value = str(producto[3] if len(producto) > 3 else 0)
             btn_guardar.text = "ACTUALIZAR PRODUCTO"
             btn_cancelar.visible = True
             page.update()
@@ -38,14 +41,20 @@ def vista_prod(page):
     def guardar_o_actualizar(e=None):
         nom = nombre.value.strip()
         cant = cantidad.value.strip()
+        pre = precio.value.strip().replace(",", ".")
         if not nom or not cant or not cant.isdigit() or int(cant) <= 0:
             mostrar_mensaje("Ingrese nombre y cantidad válidos.", False)
             return
+        try:
+            precio_num = float(pre)
+        except ValueError:
+            mostrar_mensaje("Ingrese un precio válido.", False)
+            return
         if estado_edicion["id"] is None:
-            guardar_producto(nom, cant)
+            guardar_producto(nom, cant, precio_num)
             mostrar_mensaje("Producto registrado.")
         else:
-            actualizar_producto(estado_edicion["id"], nom, cant)
+            actualizar_producto(estado_edicion["id"], nom, cant, precio_num)
             mostrar_mensaje("Producto actualizado.")
         cancelar_edicion()
         refresh()
@@ -130,7 +139,8 @@ def vista_prod(page):
                             ),
                             ft.Column([
                                 ft.Text(p[1], weight="bold", size=14, color=PRIMARY),
-                                ft.Text(f"📦 {p[2]} unidades", size=11, color="black54")
+                                ft.Text(f"📦 {p[2]} unidades", size=11, color="black54"),
+                                ft.Text(f"💰 Precio: ${float(p[3] if len(p) > 3 else 0):.2f} por unidad", size=11, color="black54")
                             ], spacing=1, expand=True),
                             ft.Row([
                                 btn_success("EDITAR", on_click=lambda e, id=p[0]: cargar_edicion(id)),
@@ -164,7 +174,7 @@ def vista_prod(page):
         ),
         ft.Divider(height=15, color="transparent"),
         card(
-            ft.Column([nombre, cantidad, ft.Row([btn_guardar, btn_cancelar], spacing=10)], spacing=10),
+            ft.Column([nombre, cantidad, precio, ft.Row([btn_guardar, btn_cancelar], spacing=10)], spacing=10),
             width=350
         ),
         ft.Divider(height=10, color="transparent"),

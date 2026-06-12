@@ -1,5 +1,6 @@
 import flet as ft
 from datos.logica import listar, pedir_producto, actualizar_stock, registrar_pedido
+from datos.presupuesto import obtener_presupuesto, guardar_presupuesto, consumir_presupuesto, costo_total, presupuesto_suficiente
 from estilos import btn_primary, btn_success, btn_danger, card, ACCENT, SUCCESS, DANGER
 
 # Vista principal para realizar pedidos y gestionar stock
@@ -15,6 +16,15 @@ def vista_pedidos(page, ir_resumen=None):
     )
     resumen_stock = ft.Row(spacing=10, wrap=True)
     alerta_stock = ft.Text("", size=12, color="black54")
+    presupuesto_info = ft.Text("", size=12, color="#4CAF50")
+    presupuesto_input = ft.TextField(
+        label="Presupuesto disponible",
+        value="0.00",
+        width=220,
+        border_radius=10,
+        keyboard_type=ft.KeyboardType.NUMBER,
+        hint_text="Ej. 5000"
+    )
     proveedores_dropdown = ft.Dropdown(
         label="Seleccionar Proveedor",
         width=300,
@@ -45,8 +55,29 @@ def vista_pedidos(page, ir_resumen=None):
                 return p[0], p[1]
         return None, None
 
+    def actualizar_presupuesto(e=None):
+        try:
+            nuevo = float((presupuesto_input.value or "0").replace(",", "."))
+        except ValueError:
+            mostrar_mensaje("Ingrese un presupuesto válido.", False)
+            return
+        guardar_presupuesto(max(0.0, nuevo))
+        presupuesto_input.value = f"{obtener_presupuesto():.2f}"
+        presupuesto_info.value = f"Presupuesto disponible: ${obtener_presupuesto():,.2f}"
+        presupuesto_info.color = SUCCESS
+        mostrar_mensaje("Presupuesto actualizado.")
+        try:
+            presupuesto_info.update()
+            presupuesto_input.update()
+            page.update()
+        except RuntimeError:
+            pass
+
     def refresh(e=None):
         cargar_proveedores()
+        presupuesto_input.value = f"{obtener_presupuesto():.2f}"
+        presupuesto_info.value = f"Presupuesto disponible: ${obtener_presupuesto():,.2f}"
+        presupuesto_info.color = SUCCESS
         todos = listar("prod")
         texto = (buscador.value or "").strip().lower()
         stock_total = [p for p in todos if not texto or texto in p[1].lower()]
@@ -73,18 +104,14 @@ def vista_pedidos(page, ir_resumen=None):
                 dense=True,
                 border_radius=10
             )
-            campo_agregar = ft.TextField(
-                value="1",
-                width=90,
-                text_align=ft.TextAlign.CENTER,
-                keyboard_type=ft.KeyboardType.NUMBER,
-                label="Añadir",
-                dense=True,
-                border_radius=8
-            )
-
             def order_producto(e, id_prod=p[0], nombre=p[1], field=cantidad):
-                if not field.value or not field.value.isdigit() or int(field.value) <= 0:
+                try:
+                    qty = int((field.value or "").strip())
+                except ValueError:
+                    mostrar_mensaje("Ingrese una cantidad válida.", False)
+                    return
+
+                if qty <= 0:
                     mostrar_mensaje("Ingrese una cantidad válida.", False)
                     return
 
@@ -93,16 +120,26 @@ def vista_pedidos(page, ir_resumen=None):
                     mostrar_mensaje("Seleccione un proveedor para asociar el pedido.", False)
                     return
 
-                qty = int(field.value)
+                precio_unitario = float(p[3] if len(p) > 3 else 0)
+                venta_total = qty * precio_unitario
+
                 if pedir_producto(id_prod, qty):
-                    registrar_pedido(id_prod, nombre, prov_id, prov_nom, qty, "pedido")
-                    mostrar_mensaje(f"✓ Pedido: {qty} x {nombre} · Proveedor: {prov_nom}")
+                    guardar_presupuesto(obtener_presupuesto() + venta_total)
+                    registrar_pedido(id_prod, nombre, prov_id, prov_nom, qty, "pedido", precio_unitario, venta_total)
+                    mostrar_mensaje(f"✓ Venta registrada: {qty} x {nombre} · Ingreso: ${venta_total:,.2f}")
                 else:
                     mostrar_mensaje("Stock insuficiente.", False)
+                    return
                 refresh()
 
-            def agregar_stock(e, id_prod=p[0], nombre=p[1], field=campo_agregar):
-                if not field.value or not field.value.isdigit() or int(field.value) <= 0:
+            def agregar_stock(e, id_prod=p[0], nombre=p[1], field=cantidad):
+                try:
+                    qty = int((field.value or "").strip())
+                except ValueError:
+                    mostrar_mensaje("Cantidad inválida.", False)
+                    return
+
+                if qty <= 0:
                     mostrar_mensaje("Cantidad inválida.", False)
                     return
 
@@ -111,12 +148,23 @@ def vista_pedidos(page, ir_resumen=None):
                     mostrar_mensaje("Seleccione un proveedor para asociar el movimiento.", False)
                     return
 
-                qty = int(field.value)
+                precio_unitario = float(p[3] if len(p) > 3 else 0)
+                costo = costo_total(qty, precio_unitario)
+                presupuesto_actual = obtener_presupuesto()
+
+                if costo > presupuesto_actual:
+                    mostrar_mensaje(f"No hay presupuesto suficiente para agregar {qty} unidad(es). Faltan ${costo - presupuesto_actual:,.2f}", False)
+                    return
+
                 if actualizar_stock(id_prod, qty):
-                    registrar_pedido(id_prod, nombre, prov_id, prov_nom, qty, "stock")
-                    mostrar_mensaje(f"✓ +{qty} stock a {nombre} · Proveedor: {prov_nom}")
+                    if not consumir_presupuesto(costo):
+                        mostrar_mensaje("No hay presupuesto suficiente para comprar esta cantidad.", False)
+                        return
+                    registrar_pedido(id_prod, nombre, prov_id, prov_nom, qty, "stock", precio_unitario, costo)
+                    mostrar_mensaje(f"✓ Compra registrada: {qty} x {nombre} · Costo: ${costo:,.2f}")
                 else:
                     mostrar_mensaje("Error al actualizar.", False)
+                    return
                 refresh()
 
             items.append(
@@ -135,10 +183,8 @@ def vista_pedidos(page, ir_resumen=None):
                             ft.Row([
                                 cantidad,
                                 btn_success("PEDIR", on_click=order_producto),
-                                ft.IconButton(ft.icons.Icons.ADD, icon_color="#4CAF50",
-                                    on_click=agregar_stock, tooltip="Aumentar stock")
+                                btn_success("AÑADIR", on_click=agregar_stock)
                             ], spacing=5, wrap=False),
-                            ft.Row([campo_agregar], spacing=5)
                         ], spacing=8)
                     ),
                     width=520
@@ -174,6 +220,18 @@ def vista_pedidos(page, ir_resumen=None):
                 padding=12,
                 border_radius=10,
                 content=proveedores_dropdown
+            ),
+            ft.Divider(height=10, color="transparent"),
+            ft.Container(
+                bgcolor="#F5F5F5",
+                padding=12,
+                border_radius=10,
+                content=ft.Column([
+                    ft.Text("Presupuesto de compras", size=15, weight="bold", color="#2196F3"),
+                    ft.Text("Define el dinero disponible para pedir o reabastecer stock.", size=12, color="black54"),
+                    ft.Row([presupuesto_input, btn_primary("Guardar presupuesto", on_click=actualizar_presupuesto)], spacing=10, wrap=True),
+                    presupuesto_info,
+                ], spacing=6)
             ),
             ft.Divider(height=10, color="transparent"),
             ft.Row(

@@ -55,8 +55,13 @@ def obtener_proveedor(id_reg):
     return obtener("prov", id_reg)
 
 # Productos
-def guardar_producto(nombre, cantidad):
-    return guardar("prod", (nombre, cantidad))
+def guardar_producto(nombre, cantidad, precio=0):
+    nombre = nombre.strip()
+    cantidad = int(cantidad)
+    precio = float(precio or 0)
+    db.execute("INSERT INTO prod (nom, cant, precio) VALUES (?, ?, ?)", (nombre, cantidad, precio))
+    db.commit()
+    return True
 
 def listar_productos():
     return listar("prod")
@@ -64,16 +69,21 @@ def listar_productos():
 def borrar_producto(id_reg):
     return borrar("prod", id_reg)
 
-def actualizar_producto(id_reg, nombre, cantidad):
-    return actualizar("prod", id_reg, (nombre.strip(), int(cantidad)))
+def actualizar_producto(id_reg, nombre, cantidad, precio=0):
+    db.execute("UPDATE prod SET nom = ?, cant = ?, precio = ? WHERE id = ?", (nombre.strip(), int(cantidad), float(precio or 0), id_reg))
+    db.commit()
+    return True
 
 def obtener_producto(id_reg):
     return obtener("prod", id_reg)
+
 
 def guardar_usuario(nombre, email, clave):
     email = email.strip().lower()
     nombre = nombre.strip()
     if not nombre or not email or not clave:
+        return False
+    if obtener_usuario_por_email(email):
         return False
     db.execute("INSERT INTO usuarios (nombre, email, clave) VALUES (?, ?, ?)", (nombre, email, clave))
     db.commit()
@@ -88,15 +98,27 @@ def verificar_usuario(email, clave):
     return usuario is not None and usuario[3] == clave
 
 
-def registrar_pedido(prod_id, prod_nom, prov_id, prov_nom, cantidad, tipo):
+def registrar_pedido(prod_id, prod_nom, prov_id, prov_nom, cantidad, tipo, precio_unitario=0, costo_total=None):
     if cantidad <= 0:
         return False
+    if costo_total is None:
+        costo_total = float(cantidad or 0) * float(precio_unitario or 0)
     db.execute(
-        "INSERT INTO pedidos (prod_id, prod_nom, prov_id, prov_nom, cant, tipo) VALUES (?, ?, ?, ?, ?, ?)",
-        (prod_id, prod_nom.strip(), prov_id, prov_nom.strip(), cantidad, tipo)
+        "INSERT INTO pedidos (prod_id, prod_nom, prov_id, prov_nom, cant, tipo, precio_unitario, costo_total) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        (prod_id, prod_nom.strip(), prov_id, prov_nom.strip(), cantidad, tipo, float(precio_unitario or 0), float(costo_total or 0))
     )
     db.commit()
     return True
+
+
+def listar_pedidos(tipo=None):
+    base_sql = (
+        "SELECT id, prod_id, prod_nom, prov_id, prov_nom, cant, tipo, "
+        "precio_unitario, costo_total, fecha FROM pedidos"
+    )
+    if tipo:
+        return db.execute(f"{base_sql} WHERE tipo = ? ORDER BY id DESC", (tipo,)).fetchall()
+    return db.execute(f"{base_sql} ORDER BY id DESC").fetchall()
 
 # Valida stock disponible y resta cantidad al producto si hay suficiente
 def pedir_producto(id_prod, cantidad):

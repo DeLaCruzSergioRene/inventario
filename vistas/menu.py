@@ -3,9 +3,11 @@ from vistas.pedidos import vista_pedidos
 from vistas.resumen import vista_resumen
 from vistas.ui_prod import vista_prod
 from vistas.ui_prov import vista_prov
+from vistas.compras import vista_compras
 from estilos import DARK
 
-def vista_menu(page: ft.Page):
+
+def vista_menu(page: ft.Page, on_logout=None):
     panel = ft.Container(
         content=vista_prod(page),
         padding=20,
@@ -17,18 +19,27 @@ def vista_menu(page: ft.Page):
 
     def ir_prod(e):
         panel.content = vista_prod(page)
+        panel.update()
         page.update()
 
     def ir_prov(e):
         panel.content = vista_prov(page)
+        panel.update()
         page.update()
 
     def ir_pedidos(e):
         panel.content = vista_pedidos(page, ir_resumen)
+        panel.update()
         page.update()
 
     def ir_resumen(e):
         panel.content = vista_resumen(page, ir_pedidos)
+        panel.update()
+        page.update()
+
+    def ir_compras(e):
+        panel.content = vista_compras(page, ir_pedidos)
+        panel.update()
         page.update()
 
     nav = ft.Container(
@@ -39,6 +50,11 @@ def vista_menu(page: ft.Page):
                     [
                         ft.Text("Menú principal", size=22, weight="bold", color=DARK),
                         ft.Text("Productos, proveedores, pedidos y resumen desde aquí.", size=13, color="black54"),
+                        ft.TextButton(
+                            "🔒 Cerrar sesión",
+                            on_click=on_logout,
+                            style=ft.ButtonStyle(color=DARK),
+                        ) if on_logout else ft.Container(),
                     ],
                     alignment="spaceBetween",
                     wrap=True,
@@ -48,6 +64,7 @@ def vista_menu(page: ft.Page):
                         ft.TextButton("📦 Productos", on_click=ir_prod, style=ft.ButtonStyle(color=DARK)),
                         ft.TextButton("👥 Proveedores", on_click=ir_prov, style=ft.ButtonStyle(color=DARK)),
                         ft.TextButton("📋 Pedidos", on_click=ir_pedidos, style=ft.ButtonStyle(color=DARK)),
+                        ft.TextButton("🛒 Compras", on_click=ir_compras, style=ft.ButtonStyle(color=DARK)),
                         ft.TextButton("📊 Resumen", on_click=ir_resumen, style=ft.ButtonStyle(color=DARK)),
                     ],
                     alignment=ft.MainAxisAlignment.CENTER,

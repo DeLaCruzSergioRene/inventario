@@ -38,7 +38,7 @@ def vista_registro(page: ft.Page, on_success=None, on_back=None):
                 if on_success:
                     on_success()
                 return
-            mensaje.value = "No se pudo guardar la cuenta."
+            mensaje.value = "No se puede registrar el mismo correo dos veces."
             mensaje.color = DANGER
 
         page.update()
@@ -65,7 +65,7 @@ def vista_registro(page: ft.Page, on_success=None, on_back=None):
         ),
         padding=24,
         border_radius=18,
-        bgcolor="white",
-        shadow=ft.BoxShadow(blur_radius=10, spread_radius=1, color="#00000015"),
+        bgcolor="rgba(255,255,255,0.88)",
+        shadow=ft.BoxShadow(blur_radius=12, spread_radius=1, color="#00000018"),
         width=420,
     )
