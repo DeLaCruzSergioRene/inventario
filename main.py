@@ -27,7 +27,7 @@ def main(page: ft.Page):
                 [
                     ft.Container(
                         expand=True,
-                        opacity=0.32,
+                        opacity=0.40,
                         image=ft.DecorationImage(
                             src="imagenes/almacen.png",
                             fit="cover",

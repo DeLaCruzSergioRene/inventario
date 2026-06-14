@@ -27,6 +27,6 @@ def btn_danger(texto, on_click=None):
 
 # Contenedor reutilizable con estilo moderno para mostrar elementos
 def card(content, width=520):
-    return ft.Container(bgcolor=LIGHT, padding=15, border_radius=12, width=width,
+    return ft.Container(bgcolor=LIGHT, padding=6, border_radius=12, width=width,
         shadow=ft.BoxShadow(blur_radius=4, spread_radius=0, color="#00000015"),
             content=content)

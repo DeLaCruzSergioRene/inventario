@@ -8,7 +8,7 @@ def vista_resumen(page, volver=None):
     proveedores = listar_proveedores()
 
     resumen_texto = ft.Text("", size=13, color="black54")
-    lista = ft.Column(spacing=10)
+    lista = ft.Row(spacing=10, run_spacing=10, wrap=True, alignment="start")
 
     def actualizar_lista(e=None):
         texto = (buscador.value or "").strip().lower()
@@ -29,7 +29,7 @@ def vista_resumen(page, volver=None):
                             ft.Text(f"Stock actual: {p[2]} unidades", size=13, color="black54"),
                             ft.Text("Tipo: Producto", size=12, color=ACCENT),
                         ], spacing=4),
-                        width=500,
+                        width=470,
                     ),
                     margin=ft.margin.only(bottom=6),
                 )
@@ -49,7 +49,7 @@ def vista_resumen(page, volver=None):
                             ft.Text(f"Teléfono: {prov[2]}", size=13, color="black54"),
                             ft.Text("Tipo: Proveedor", size=12, color=SUCCESS),
                         ], spacing=4),
-                        width=500,
+                        width=470,
                     ),
                     margin=ft.margin.only(bottom=6),
                 )
