@@ -27,18 +27,19 @@ def main(page: ft.Page):
                 [
                     ft.Container(
                         expand=True,
+                        opacity=0.32,
                         image=ft.DecorationImage(
                             src="imagenes/almacen.png",
                             fit="cover",
                         ),
                         bgcolor="#0F172A",
                     ),
-                    ft.Container(expand=True, bgcolor="rgba(15, 23, 42, 0.55)"),
+                    ft.Container(expand=True, bgcolor="rgba(8, 15, 35, 0.35)"),
                     ft.Container(
                         content=ft.Column(
                             [
-                                ft.Text("Gestor de inventario", size=28, weight="bold", color="white"),
-                                ft.Text("Inicia sesión o crea una cuenta para entrar al sistema.", weight="bold", size=14, color="#FBFF00"),
+                                ft.Text("Gestor de inventario", size=34, weight="bold", color="white", text_align=ft.TextAlign.CENTER),
+                                ft.Text("Inicia sesión o crea una cuenta para entrar al sistema con confianza.", weight="bold", size=17, color="#0359F8", text_align=ft.TextAlign.CENTER),
                                 ft.Divider(height=10, color="transparent"),
                                 ft.Button("Iniciar sesión", on_click=lambda e: mostrar_login(), width=260, style=ft.ButtonStyle(color="white", bgcolor="#2196F3")),
                                 ft.Button("Registrarse", on_click=lambda e: mostrar_registro(), width=260, style=ft.ButtonStyle(color="white", bgcolor="#4CAF50")),
@@ -49,7 +50,7 @@ def main(page: ft.Page):
                         ),
                         padding=24,
                         border_radius=18,
-                        bgcolor="rgba(255,255,255,0.82)",
+                        bgcolor="rgba(255,255,255,0.92)",
                         shadow=ft.BoxShadow(blur_radius=14, spread_radius=1, color="#00000025"),
                         width=420,
                         alignment=ft.Alignment.CENTER,

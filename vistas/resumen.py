@@ -1,5 +1,5 @@
 import flet as ft
-from datos.logica import listar_productos, listar_proveedores
+from datos.logica import contar_entradas, contar_salidas, listar_productos, listar_proveedores
 from estilos import btn_primary, card, PRIMARY, SUCCESS, DANGER, ACCENT
 # Vista adicional para ver el total registrado con scroll y búsqueda rápida
 
@@ -80,6 +80,8 @@ def vista_resumen(page, volver=None):
 
     total_unidades = sum(p[2] for p in productos)
     stock_bajo = sum(1 for p in productos if p[2] < 5)
+    entradas = contar_entradas()
+    salidas = contar_salidas()
 
     actualizar_lista()
 
@@ -110,6 +112,8 @@ def vista_resumen(page, volver=None):
                         card(ft.Column([ft.Text("Productos", size=11, color="black54"), ft.Text(str(len(productos)), size=24, weight="bold", color=PRIMARY)]), width=150),
                         card(ft.Column([ft.Text("Proveedores", size=11, color="black54"), ft.Text(str(len(proveedores)), size=24, weight="bold", color=SUCCESS)]), width=150),
                         card(ft.Column([ft.Text("Unidades", size=11, color="black54"), ft.Text(str(total_unidades), size=24, weight="bold", color=ACCENT)]), width=150),
+                        card(ft.Column([ft.Text("Entradas", size=11, color="black54"), ft.Text(str(entradas), size=24, weight="bold", color=SUCCESS)]), width=150),
+                        card(ft.Column([ft.Text("Salidas", size=11, color="black54"), ft.Text(str(salidas), size=24, weight="bold", color=DANGER)]), width=150),
                         card(ft.Column([ft.Text("Stock bajo", size=11, color="black54"), ft.Text(str(stock_bajo), size=24, weight="bold", color=DANGER)]), width=150),
                     ],
                     spacing=10,

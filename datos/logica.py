@@ -1,6 +1,26 @@
+from datetime import datetime, timezone
+
 from datos.db import conectar
 
 db = conectar()
+
+
+def ahora_local():
+    return datetime.now().astimezone().strftime("%Y-%m-%d %H:%M:%S")
+
+
+def formatear_fecha_local(fecha):
+    if not fecha:
+        return ""
+    try:
+        dt = datetime.fromisoformat(str(fecha).replace("Z", "+00:00"))
+    except ValueError:
+        return str(fecha)
+
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+
+    return dt.astimezone().strftime("%Y-%m-%d %H:%M:%S")
 
 # Inserta un nuevo registro en la tabla especificada (proveedores o productos)
 def guardar(tab, val):
@@ -85,7 +105,10 @@ def guardar_usuario(nombre, email, clave):
         return False
     if obtener_usuario_por_email(email):
         return False
-    db.execute("INSERT INTO usuarios (nombre, email, clave) VALUES (?, ?, ?)", (nombre, email, clave))
+    db.execute(
+        "INSERT INTO usuarios (nombre, email, clave, fecha) VALUES (?, ?, ?, ?)",
+        (nombre, email, clave, ahora_local()),
+    )
     db.commit()
     return True
 
@@ -104,8 +127,8 @@ def registrar_pedido(prod_id, prod_nom, prov_id, prov_nom, cantidad, tipo, preci
     if costo_total is None:
         costo_total = float(cantidad or 0) * float(precio_unitario or 0)
     db.execute(
-        "INSERT INTO pedidos (prod_id, prod_nom, prov_id, prov_nom, cant, tipo, precio_unitario, costo_total) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-        (prod_id, prod_nom.strip(), prov_id, prov_nom.strip(), cantidad, tipo, float(precio_unitario or 0), float(costo_total or 0))
+        "INSERT INTO pedidos (prod_id, prod_nom, prov_id, prov_nom, cant, tipo, precio_unitario, costo_total, fecha) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        (prod_id, prod_nom.strip(), prov_id, prov_nom.strip(), cantidad, tipo, float(precio_unitario or 0), float(costo_total or 0), ahora_local())
     )
     db.commit()
     return True
@@ -119,6 +142,19 @@ def listar_pedidos(tipo=None):
     if tipo:
         return db.execute(f"{base_sql} WHERE tipo = ? ORDER BY id DESC", (tipo,)).fetchall()
     return db.execute(f"{base_sql} ORDER BY id DESC").fetchall()
+
+
+def contar_movimientos(tipo):
+    fila = db.execute("SELECT COALESCE(SUM(cant), 0) FROM pedidos WHERE tipo = ?", (tipo,)).fetchone()
+    return int(fila[0]) if fila else 0
+
+
+def contar_entradas():
+    return contar_movimientos("stock")
+
+
+def contar_salidas():
+    return contar_movimientos("pedido")
 
 # Valida stock disponible y resta cantidad al producto si hay suficiente
 def pedir_producto(id_prod, cantidad):

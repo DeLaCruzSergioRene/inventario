@@ -44,28 +44,46 @@ def vista_registro(page: ft.Page, on_success=None, on_back=None):
         page.update()
 
     return ft.Container(
-        content=ft.Column(
+        expand=True,
+        alignment=ft.Alignment.CENTER,
+        content=ft.Stack(
             [
-                ft.Text("Registro", size=24, weight="bold", color=PRIMARY),
-                ft.Text("Crea tu cuenta para entrar al sistema.", size=13, color="black54"),
-                nombre,
-                email,
-                clave,
-                mensaje,
-                ft.Row(
-                    [
-                        ft.Button("Crear cuenta", on_click=crear_cuenta, width=150, style=ft.ButtonStyle(color="white", bgcolor="#4CAF50")),
-                        ft.TextButton("Volver", on_click=lambda e: on_back() if on_back else None),
-                    ],
-                    spacing=10,
+                ft.Container(
+                    expand=True,
+                    opacity=0.32,
+                    image=ft.DecorationImage(src="imagenes/registro.png", fit="cover"),
+                    bgcolor="#0F172A",
+                ),
+                ft.Container(expand=True, bgcolor="rgba(7, 25, 16, 0.35)"),
+                ft.Container(
+                    content=ft.Column(
+                        [
+                            ft.Text("Registro", size=24, weight="bold", color=PRIMARY),
+                            ft.Text("Crea tu cuenta para entrar al sistema.", size=13, color="black54"),
+                            nombre,
+                            email,
+                            clave,
+                            mensaje,
+                            ft.Row(
+                                [
+                                    ft.Button("Crear cuenta", on_click=crear_cuenta, width=150, style=ft.ButtonStyle(color="white", bgcolor="#4CAF50")),
+                                    ft.TextButton("Volver", on_click=lambda e: on_back() if on_back else None),
+                                ],
+                                spacing=10,
+                            ),
+                        ],
+                        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                        spacing=10,
+                    ),
+                    padding=24,
+                    border_radius=18,
+                    bgcolor="rgba(247, 255, 249, 0.94)",
+                    shadow=ft.BoxShadow(blur_radius=12, spread_radius=1, color="#00000018"),
+                    width=440,
+                    alignment=ft.Alignment.CENTER,
                 ),
             ],
-            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-            spacing=10,
+            expand=True,
+            alignment=ft.Alignment.CENTER,
         ),
-        padding=24,
-        border_radius=18,
-        bgcolor="rgba(255,255,255,0.88)",
-        shadow=ft.BoxShadow(blur_radius=12, spread_radius=1, color="#00000018"),
-        width=420,
     )

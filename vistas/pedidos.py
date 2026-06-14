@@ -95,6 +95,7 @@ def vista_pedidos(page, ir_resumen=None):
 
         items = []
         for p in stock_total:
+            aviso_proveedor = ft.Text("", size=12, color=DANGER, visible=False)
             cantidad = ft.TextField(
                 value="1",
                 width=110,
@@ -108,15 +109,24 @@ def vista_pedidos(page, ir_resumen=None):
                 try:
                     qty = int((field.value or "").strip())
                 except ValueError:
+                    aviso_proveedor.value = "⚠️ Ingresa una cantidad válida para continuar."
+                    aviso_proveedor.visible = True
+                    aviso_proveedor.update()
                     mostrar_mensaje("Ingrese una cantidad válida.", False)
                     return
 
                 if qty <= 0:
+                    aviso_proveedor.value = "⚠️ La cantidad debe ser mayor que cero."
+                    aviso_proveedor.visible = True
+                    aviso_proveedor.update()
                     mostrar_mensaje("Ingrese una cantidad válida.", False)
                     return
 
                 prov_id, prov_nom = obtener_proveedor_seleccionado()
                 if not prov_id or not prov_nom:
+                    aviso_proveedor.value = "⚠️ Selecciona un proveedor para poder pedir este producto."
+                    aviso_proveedor.visible = True
+                    aviso_proveedor.update()
                     mostrar_mensaje("Seleccione un proveedor para asociar el pedido.", False)
                     return
 
@@ -124,10 +134,16 @@ def vista_pedidos(page, ir_resumen=None):
                 venta_total = qty * precio_unitario
 
                 if pedir_producto(id_prod, qty):
+                    aviso_proveedor.value = ""
+                    aviso_proveedor.visible = False
+                    aviso_proveedor.update()
                     guardar_presupuesto(obtener_presupuesto() + venta_total)
                     registrar_pedido(id_prod, nombre, prov_id, prov_nom, qty, "pedido", precio_unitario, venta_total)
                     mostrar_mensaje(f"✓ Venta registrada: {qty} x {nombre} · Ingreso: ${venta_total:,.2f}")
                 else:
+                    aviso_proveedor.value = "⚠️ No hay stock suficiente para esta cantidad."
+                    aviso_proveedor.visible = True
+                    aviso_proveedor.update()
                     mostrar_mensaje("Stock insuficiente.", False)
                     return
                 refresh()
@@ -136,15 +152,24 @@ def vista_pedidos(page, ir_resumen=None):
                 try:
                     qty = int((field.value or "").strip())
                 except ValueError:
+                    aviso_proveedor.value = "⚠️ Ingresa una cantidad válida para continuar."
+                    aviso_proveedor.visible = True
+                    aviso_proveedor.update()
                     mostrar_mensaje("Cantidad inválida.", False)
                     return
 
                 if qty <= 0:
+                    aviso_proveedor.value = "⚠️ La cantidad debe ser mayor que cero."
+                    aviso_proveedor.visible = True
+                    aviso_proveedor.update()
                     mostrar_mensaje("Cantidad inválida.", False)
                     return
 
                 prov_id, prov_nom = obtener_proveedor_seleccionado()
                 if not prov_id or not prov_nom:
+                    aviso_proveedor.value = "⚠️ Selecciona un proveedor para poder añadir este producto."
+                    aviso_proveedor.visible = True
+                    aviso_proveedor.update()
                     mostrar_mensaje("Seleccione un proveedor para asociar el movimiento.", False)
                     return
 
@@ -153,10 +178,16 @@ def vista_pedidos(page, ir_resumen=None):
                 presupuesto_actual = obtener_presupuesto()
 
                 if costo > presupuesto_actual:
+                    aviso_proveedor.value = f"⚠️ No hay presupuesto suficiente para añadir {qty} unidad(es). Faltan ${costo - presupuesto_actual:,.2f}."
+                    aviso_proveedor.visible = True
+                    aviso_proveedor.update()
                     mostrar_mensaje(f"No hay presupuesto suficiente para agregar {qty} unidad(es). Faltan ${costo - presupuesto_actual:,.2f}", False)
                     return
 
                 if actualizar_stock(id_prod, qty):
+                    aviso_proveedor.value = ""
+                    aviso_proveedor.visible = False
+                    aviso_proveedor.update()
                     if not consumir_presupuesto(costo):
                         mostrar_mensaje("No hay presupuesto suficiente para comprar esta cantidad.", False)
                         return
@@ -185,6 +216,7 @@ def vista_pedidos(page, ir_resumen=None):
                                 btn_success("PEDIR", on_click=order_producto),
                                 btn_success("AÑADIR", on_click=agregar_stock)
                             ], spacing=5, wrap=False),
+                            aviso_proveedor,
                         ], spacing=8)
                     ),
                     width=520

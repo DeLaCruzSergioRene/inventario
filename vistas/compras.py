@@ -1,5 +1,5 @@
 import flet as ft
-from datos.logica import listar_pedidos
+from datos.logica import formatear_fecha_local, listar_pedidos
 from estilos import card, PRIMARY, SUCCESS, DANGER
 
 
@@ -23,7 +23,7 @@ def vista_compras(page, volver=None):
                         ft.Text(f"{pedido[2]}", size=15, weight="bold", color=PRIMARY),
                         ft.Text(f"Tipo: {tipo_label} | Cantidad: {pedido[5]} | Proveedor: {pedido[4]}", size=12, color="black54"),
                         ft.Text(f"Costo total: ${costo_total:,.2f} | Precio unitario: ${precio_unitario:,.2f}", size=12, color=DANGER),
-                        ft.Text(f"Fecha: {pedido[9]}", size=11, color="black54"),
+                        ft.Text(f"Fecha: {formatear_fecha_local(pedido[9])}", size=11, color="black54"),
                     ], spacing=4),
                     width=520,
                 )
