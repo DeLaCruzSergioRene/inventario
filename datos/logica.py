@@ -18,7 +18,7 @@ def formatear_fecha_local(fecha):
         return str(fecha)
 
     if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
+        dt = dt.replace(tzinfo=datetime.now().astimezone().tzinfo)
 
     return dt.astimezone().strftime("%Y-%m-%d %H:%M:%S")
 
