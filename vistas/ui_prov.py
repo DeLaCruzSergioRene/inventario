@@ -1,6 +1,6 @@
 import flet as ft
 from datos.logica import guardar_proveedor, listar_proveedores, borrar_proveedor, actualizar_proveedor, obtener_proveedor
-from estilos import btn_primary, btn_danger, btn_success, card, PRIMARY, ACCENT, SUCCESS, DANGER
+from estilos import btn_primary, btn_danger, btn_success, card, PRIMARY, ACCENT, SUCCESS, DANGER, BG
 
 # Vista para registrar y gestionar proveedores
 def vista_prov(page):
@@ -128,23 +128,28 @@ def vista_prov(page):
             col.update()
 
     col.on_mount = refresh
-    return ft.Column([
-        ft.Row(
-            [
-                ft.Text("Proveedores", size=28, weight="bold", color=PRIMARY),
-                ft.Text("Gestiona tus proveedores y contactos.", size=13, color="black54"),
-            ],
-            alignment="spaceBetween",
-            wrap=True,
-        ),
-        ft.Divider(height=15, color="transparent"),
-        card(
-            ft.Column([nombre, telefono, ft.Row([btn_guardar, btn_cancelar], spacing=10)], spacing=10),
-            width=350
-        ),
-        ft.Divider(height=10, color="transparent"),
-        busqueda,
-        resumen,
-        ft.Divider(height=10, color="transparent"),
-        col
-    ], horizontal_alignment="center", scroll="auto")
+    return ft.Container(
+        expand=True,
+        bgcolor=BG,
+        padding=10,
+        content=ft.Column([
+            ft.Row(
+                [
+                    ft.Text("Proveedores", size=28, weight="bold", color=PRIMARY),
+                    ft.Text("Gestiona tus proveedores y contactos.", size=13, color="black54"),
+                ],
+                alignment="spaceBetween",
+                wrap=True,
+            ),
+            ft.Divider(height=15, color="transparent"),
+            card(
+                ft.Column([nombre, telefono, ft.Row([btn_guardar, btn_cancelar], spacing=10)], spacing=10),
+                width=350
+            ),
+            ft.Divider(height=10, color="transparent"),
+            busqueda,
+            resumen,
+            ft.Divider(height=10, color="transparent"),
+            col
+        ], horizontal_alignment="center", scroll="auto")
+    )

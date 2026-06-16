@@ -1,6 +1,6 @@
 import flet as ft
 from datos.logica import guardar_producto, listar_productos, borrar_producto, actualizar_producto, obtener_producto
-from estilos import btn_primary, btn_danger, btn_success, card, PRIMARY, ACCENT, SUCCESS, DANGER
+from estilos import btn_primary, btn_danger, btn_success, card, PRIMARY, ACCENT, SUCCESS, DANGER, BG
 
 # Vista para gestionar el inventario de productos
 def vista_prod(page):
@@ -163,25 +163,30 @@ def vista_prod(page):
             pass
 
     col.on_mount = refresh
-    return ft.Column([
-        ft.Row(
-            [
-                ft.Text("Productos", size=28, weight="bold", color=PRIMARY),
-                ft.Text("Registra productos y gestiona el stock.", size=13, color="black54"),
-            ],
-            alignment="spaceBetween",
-            wrap=True,
-        ),
-        ft.Divider(height=15, color="transparent"),
-        card(
-            ft.Column([nombre, cantidad, precio, ft.Row([btn_guardar, btn_cancelar], spacing=10)], spacing=10),
-            width=350
-        ),
-        ft.Divider(height=10, color="transparent"),
-        ft.Text("Resumen rápido", size=16, weight="bold", color=PRIMARY),
-        busqueda,
-        resumen,
-        alerta_stock,
-        ft.Divider(height=10, color="transparent"),
-        col
-    ], horizontal_alignment="center", scroll="auto")
+    return ft.Container(
+        expand=True,
+        bgcolor=BG,
+        padding=10,
+        content=ft.Column([
+            ft.Row(
+                [
+                    ft.Text("Productos", size=28, weight="bold", color=PRIMARY),
+                    ft.Text("Registra productos y gestiona el stock.", size=13, color="black54"),
+                ],
+                alignment="spaceBetween",
+                wrap=True,
+            ),
+            ft.Divider(height=15, color="transparent"),
+            card(
+                ft.Column([nombre, cantidad, precio, ft.Row([btn_guardar, btn_cancelar], spacing=10)], spacing=10),
+                width=350
+            ),
+            ft.Divider(height=10, color="transparent"),
+            ft.Text("Resumen rápido", size=16, weight="bold", color=PRIMARY),
+            busqueda,
+            resumen,
+            alerta_stock,
+            ft.Divider(height=10, color="transparent"),
+            col
+        ], horizontal_alignment="center", scroll="auto")
+    )

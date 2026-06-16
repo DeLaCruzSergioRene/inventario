@@ -1,10 +1,24 @@
 import flet as ft
-from datos.logica import formatear_fecha_local, listar_pedidos
-from estilos import card, PRIMARY, SUCCESS, DANGER
+from datos.logica import formatear_fecha_local, listar_pedidos, borrar_pedido
+from estilos import card, btn_danger, PRIMARY, SUCCESS, DANGER, BG
 
 
 def vista_compras(page, volver=None):
     lista = ft.Column(spacing=10)
+
+    def mostrar_mensaje(texto, exito=True):
+        page.snack_bar = ft.SnackBar(ft.Text(texto), bgcolor=SUCCESS if exito else DANGER)
+        page.snack_bar.open = True
+        page.update()
+
+    def borrar_directo(id_reg, e=None):
+        res = borrar_pedido(id_reg)
+        if res:
+            mostrar_mensaje("Pedido eliminado.")
+        else:
+            mostrar_mensaje("No se pudo eliminar el pedido.", False)
+        refrescar()
+        page.update()
 
     def refrescar(e=None):
         items = []
@@ -19,12 +33,18 @@ def vista_compras(page, volver=None):
 
             items.append(
                 card(
-                    ft.Column([
-                        ft.Text(f"{pedido[2]}", size=15, weight="bold", color=PRIMARY),
-                        ft.Text(f"Tipo: {tipo_label} | Cantidad: {pedido[5]} | Proveedor: {pedido[4]}", size=12, color="black54"),
-                        ft.Text(f"Costo total: ${costo_total:,.2f} | Precio unitario: ${precio_unitario:,.2f}", size=12, color=DANGER),
-                        ft.Text(f"Fecha: {formatear_fecha_local(pedido[9])}", size=11, color="black54"),
-                    ], spacing=4),
+                    ft.Row([
+                        ft.Column([
+                            ft.Text(f"{pedido[2]}", size=15, weight="bold", color=PRIMARY),
+                            ft.Text(f"Tipo: {tipo_label} | Cantidad: {pedido[5]} | Proveedor: {pedido[4]}", size=12, color="black54"),
+                            ft.Row([
+                                ft.Text(f"Costo total: ${costo_total:,.2f}", size=12, color=SUCCESS, weight="bold"),
+                                ft.Text(f"Precio unitario: ${precio_unitario:,.2f}", size=12, color=DANGER),
+                            ], spacing=20),
+                            ft.Text(f"Fecha: {formatear_fecha_local(pedido[9])}", size=11, color="black54"),
+                        ], spacing=4, expand=True),
+                        btn_danger("✕", on_click=lambda e, id=pedido[0]: borrar_directo(id))
+                    ], alignment="spaceBetween", vertical_alignment="center"),
                     width=520,
                 )
             )
@@ -44,6 +64,7 @@ def vista_compras(page, volver=None):
     return ft.Container(
         expand=True,
         padding=10,
+        bgcolor=BG,
         content=ft.Column([
             ft.Row([
                 ft.Text("Compras", size=28, weight="bold", color=PRIMARY),

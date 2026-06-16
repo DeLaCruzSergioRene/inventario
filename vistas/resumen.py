@@ -1,6 +1,6 @@
 import flet as ft
 from datos.logica import contar_entradas, contar_salidas, listar_productos, listar_proveedores
-from estilos import btn_primary, card, PRIMARY, SUCCESS, DANGER, ACCENT
+from estilos import btn_primary, card, PRIMARY, SUCCESS, DANGER, ACCENT, BG
 # Vista adicional para ver el total registrado con scroll y búsqueda rápida
 
 def vista_resumen(page, volver=None):
@@ -88,6 +88,7 @@ def vista_resumen(page, volver=None):
     return ft.Container(
         expand=True,
         padding=5,
+        bgcolor=BG,
         content=ft.Column(
             [
                 ft.Row(

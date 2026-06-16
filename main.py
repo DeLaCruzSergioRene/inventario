@@ -38,7 +38,7 @@ def main(page: ft.Page):
                     ft.Container(
                         content=ft.Column(
                             [
-                                ft.Text("Gestor de inventario", size=34, weight="bold", color="white", text_align=ft.TextAlign.CENTER),
+                                ft.Text("FastGest.", size=34, weight="bold", color="#24252B", text_align=ft.TextAlign.CENTER),
                                 ft.Text("Inicia sesión o crea una cuenta para entrar al sistema con confianza.", weight="bold", size=17, color="#0359F8", text_align=ft.TextAlign.CENTER),
                                 ft.Divider(height=10, color="transparent"),
                                 ft.Button("Iniciar sesión", on_click=lambda e: mostrar_login(), width=260, style=ft.ButtonStyle(color="white", bgcolor="#2196F3")),

@@ -1,7 +1,7 @@
 import flet as ft
 from datos.logica import listar, pedir_producto, actualizar_stock, registrar_pedido
 from datos.presupuesto import obtener_presupuesto, guardar_presupuesto, consumir_presupuesto, costo_total, presupuesto_suficiente
-from estilos import btn_primary, btn_success, btn_danger, card, ACCENT, SUCCESS, DANGER
+from estilos import btn_primary, btn_success, btn_danger, card, ACCENT, SUCCESS, DANGER, BG, PRIMARY
 
 # Vista principal para realizar pedidos y gestionar stock
 
@@ -105,9 +105,18 @@ def vista_pedidos(page, ir_resumen=None):
                 dense=True,
                 border_radius=10
             )
-            def order_producto(e, id_prod=p[0], nombre=p[1], field=cantidad):
+            precio_unitario_field = ft.TextField(
+                label="Precio unitario",
+                value=f"{float(p[3] if len(p) > 3 else 0):.2f}",
+                width=130,
+                text_align=ft.TextAlign.CENTER,
+                keyboard_type=ft.KeyboardType.NUMBER,
+                dense=True,
+                border_radius=10
+            )
+            def order_producto(e, id_prod=p[0], nombre=p[1], cantidad_field=cantidad, precio_field=precio_unitario_field):
                 try:
-                    qty = int((field.value or "").strip())
+                    qty = int((cantidad_field.value or "").strip())
                 except ValueError:
                     aviso_proveedor.value = "⚠️ Ingresa una cantidad válida para continuar."
                     aviso_proveedor.visible = True
@@ -115,11 +124,27 @@ def vista_pedidos(page, ir_resumen=None):
                     mostrar_mensaje("Ingrese una cantidad válida.", False)
                     return
 
+                try:
+                    precio_unitario = float((precio_field.value or "0").replace(",", "."))
+                except ValueError:
+                    aviso_proveedor.value = "⚠️ Ingresa un precio unitario válido."
+                    aviso_proveedor.visible = True
+                    aviso_proveedor.update()
+                    mostrar_mensaje("Ingrese un precio unitario válido.", False)
+                    return
+
                 if qty <= 0:
                     aviso_proveedor.value = "⚠️ La cantidad debe ser mayor que cero."
                     aviso_proveedor.visible = True
                     aviso_proveedor.update()
                     mostrar_mensaje("Ingrese una cantidad válida.", False)
+                    return
+
+                if precio_unitario <= 0:
+                    aviso_proveedor.value = "⚠️ El precio unitario debe ser mayor que cero."
+                    aviso_proveedor.visible = True
+                    aviso_proveedor.update()
+                    mostrar_mensaje("Ingrese un precio unitario válido.", False)
                     return
 
                 prov_id, prov_nom = obtener_proveedor_seleccionado()
@@ -130,7 +155,6 @@ def vista_pedidos(page, ir_resumen=None):
                     mostrar_mensaje("Seleccione un proveedor para asociar el pedido.", False)
                     return
 
-                precio_unitario = float(p[3] if len(p) > 3 else 0)
                 venta_total = qty * precio_unitario
 
                 if pedir_producto(id_prod, qty):
@@ -148,9 +172,9 @@ def vista_pedidos(page, ir_resumen=None):
                     return
                 refresh()
 
-            def agregar_stock(e, id_prod=p[0], nombre=p[1], field=cantidad):
+            def agregar_stock(e, id_prod=p[0], nombre=p[1], cantidad_field=cantidad, precio_field=precio_unitario_field):
                 try:
-                    qty = int((field.value or "").strip())
+                    qty = int((cantidad_field.value or "").strip())
                 except ValueError:
                     aviso_proveedor.value = "⚠️ Ingresa una cantidad válida para continuar."
                     aviso_proveedor.visible = True
@@ -158,11 +182,27 @@ def vista_pedidos(page, ir_resumen=None):
                     mostrar_mensaje("Cantidad inválida.", False)
                     return
 
+                try:
+                    precio_unitario = float((precio_field.value or "0").replace(",", "."))
+                except ValueError:
+                    aviso_proveedor.value = "⚠️ Ingresa un precio unitario válido."
+                    aviso_proveedor.visible = True
+                    aviso_proveedor.update()
+                    mostrar_mensaje("Ingrese un precio unitario válido.", False)
+                    return
+
                 if qty <= 0:
                     aviso_proveedor.value = "⚠️ La cantidad debe ser mayor que cero."
                     aviso_proveedor.visible = True
                     aviso_proveedor.update()
                     mostrar_mensaje("Cantidad inválida.", False)
+                    return
+
+                if precio_unitario <= 0:
+                    aviso_proveedor.value = "⚠️ El precio unitario debe ser mayor que cero."
+                    aviso_proveedor.visible = True
+                    aviso_proveedor.update()
+                    mostrar_mensaje("Ingrese un precio unitario válido.", False)
                     return
 
                 prov_id, prov_nom = obtener_proveedor_seleccionado()
@@ -173,7 +213,6 @@ def vista_pedidos(page, ir_resumen=None):
                     mostrar_mensaje("Seleccione un proveedor para asociar el movimiento.", False)
                     return
 
-                precio_unitario = float(p[3] if len(p) > 3 else 0)
                 costo = costo_total(qty, precio_unitario)
                 presupuesto_actual = obtener_presupuesto()
 
@@ -213,9 +252,10 @@ def vista_pedidos(page, ir_resumen=None):
                             ], alignment="spaceBetween"),
                             ft.Row([
                                 cantidad,
+                                precio_unitario_field,
                                 btn_success("PEDIR", on_click=order_producto),
                                 btn_success("AÑADIR", on_click=agregar_stock)
-                            ], spacing=5, wrap=False),
+                            ], spacing=5, wrap=True),
                             aviso_proveedor,
                         ], spacing=8)
                     ),
@@ -236,51 +276,56 @@ def vista_pedidos(page, ir_resumen=None):
 
     buscador.on_change = refresh
     refresh()
-    return ft.Column(
-        [
-            ft.Row(
-                [
-                    ft.Text("Pedidos", size=28, weight="bold", color="#2196F3"),
-                    ft.Text("Busca productos, registra pedidos y revisa el stock actualizado.", size=13, color="black54"),
-                ],
-                alignment="spaceBetween",
-                wrap=True,
-            ),
-            ft.Divider(height=15, color="transparent"),
-            ft.Container(
-                bgcolor="#F5F5F5",
-                padding=12,
-                border_radius=10,
-                content=proveedores_dropdown
-            ),
-            ft.Divider(height=10, color="transparent"),
-            ft.Container(
-                bgcolor="#F5F5F5",
-                padding=12,
-                border_radius=10,
-                content=ft.Column([
-                    ft.Text("Presupuesto de compras", size=15, weight="bold", color="#2196F3"),
-                    ft.Text("Define el dinero disponible para pedir o reabastecer stock.", size=12, color="black54"),
-                    ft.Row([presupuesto_input, btn_primary("Guardar presupuesto", on_click=actualizar_presupuesto)], spacing=10, wrap=True),
-                    presupuesto_info,
-                ], spacing=6)
-            ),
-            ft.Divider(height=10, color="transparent"),
-            ft.Row(
-                [
-                    buscador,
-                    btn_primary("Ver resumen total", on_click=ir_resumen) if ir_resumen else ft.Container(),
-                ],
-                spacing=10,
-                wrap=True,
-                alignment="start",
-            ),
-            ft.Text("Resumen de stock", size=16, weight="bold", color="#2196F3"),
-            resumen_stock,
-            alerta_stock,
-            ft.Divider(height=10, color="transparent"),
-            productos
-        ],
-        horizontal_alignment="center",
-        scroll="auto"
+    return ft.Container(
+        expand=True,
+        bgcolor=BG,
+        padding=10,
+        content=ft.Column(
+            [
+                ft.Row(
+                    [
+                        ft.Text("Pedidos", size=28, weight="bold", color=PRIMARY),
+                        ft.Text("Busca productos, registra pedidos y revisa el stock actualizado.", size=13, color="black54"),
+                    ],
+                    alignment="spaceBetween",
+                    wrap=True,
+                ),
+                ft.Divider(height=15, color="transparent"),
+                ft.Container(
+                    bgcolor="#F5F5F5",
+                    padding=12,
+                    border_radius=10,
+                    content=proveedores_dropdown
+                ),
+                ft.Divider(height=10, color="transparent"),
+                ft.Container(
+                    bgcolor="#F5F5F5",
+                    padding=12,
+                    border_radius=10,
+                    content=ft.Column([
+                        ft.Text("Presupuesto de compras", size=15, weight="bold", color="#2196F3"),
+                        ft.Text("Define el dinero disponible para pedir o reabastecer stock.", size=12, color="black54"),
+                        ft.Row([presupuesto_input, btn_primary("Guardar presupuesto", on_click=actualizar_presupuesto)], spacing=10, wrap=True),
+                        presupuesto_info,
+                    ], spacing=6)
+                ),
+                ft.Divider(height=10, color="transparent"),
+                ft.Row(
+                    [
+                        buscador,
+                        btn_primary("Ver resumen total", on_click=ir_resumen) if ir_resumen else ft.Container(),
+                    ],
+                    spacing=10,
+                    wrap=True,
+                    alignment="start",
+                ),
+                ft.Text("Resumen de stock", size=16, weight="bold", color="#2196F3"),
+                resumen_stock,
+                alerta_stock,
+                ft.Divider(height=10, color="transparent"),
+                productos
+            ],
+            horizontal_alignment="center",
+            scroll="auto"
+        )
     )

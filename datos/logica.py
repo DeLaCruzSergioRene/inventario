@@ -143,6 +143,9 @@ def listar_pedidos(tipo=None):
         return db.execute(f"{base_sql} WHERE tipo = ? ORDER BY id DESC", (tipo,)).fetchall()
     return db.execute(f"{base_sql} ORDER BY id DESC").fetchall()
 
+def borrar_pedido(id_reg):
+    return borrar("pedidos", id_reg)
+
 
 def contar_movimientos(tipo):
     fila = db.execute("SELECT COALESCE(SUM(cant), 0) FROM pedidos WHERE tipo = ?", (tipo,)).fetchone()
